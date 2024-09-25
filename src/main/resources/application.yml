@@ -1,0 +1,18 @@
+spring:
+  application:
+    name: SecureFileStorage
+  datasource:
+    url: jdbc:mysql://localhost:3306/secure_file_storage_db
+    username: root
+    password: PR3Z1sk1ng
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+  servlet:
+    multipart:
+      max-file-size: -1
+      max-request-size: -1
+storage:
+  location: C:/Users/prezrohit/Desktop/SecureFileStorage_Files/
