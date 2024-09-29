@@ -16,3 +16,5 @@ spring:
       max-request-size: -1
 storage:
   location: C:/Users/prezrohit/Desktop/SecureFileStorage_Files/
+encryption:
+  rsa-key-length: 4096
