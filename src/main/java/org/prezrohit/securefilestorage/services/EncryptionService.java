@@ -25,8 +25,7 @@ public class EncryptionService {
         return kf.generatePrivate(spec);
     }
 
-    public PublicKey getPublic(String filename, String algorithm)
-            throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
+    public PublicKey getPublic(String filename, String algorithm) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
         byte[] keyBytes = Files.readAllBytes(new File(filename).toPath());
         X509EncodedKeySpec spec = new X509EncodedKeySpec(keyBytes);
         KeyFactory kf = KeyFactory.getInstance(algorithm);
@@ -41,10 +40,8 @@ public class EncryptionService {
     public byte[] encrypt(byte[] fileBytes) throws GeneralSecurityException, IOException {
         File originalKeyFile = new File(Constants.STATIC_RESOURCE_PATH + "symmetricKey/secretKey");
         File encryptedKeyFile = new File(Constants.STATIC_RESOURCE_PATH + "symmetricKey/encryptedSecretKey");
-        new EncryptKey(getPublic(Constants.STATIC_RESOURCE_PATH + "bobKeyPair/publicKey", "RSA"),
-                originalKeyFile, encryptedKeyFile, "RSA");
+        new EncryptKey(getPublic(Constants.STATIC_RESOURCE_PATH + "bobKeyPair/publicKey", "RSA"), originalKeyFile, encryptedKeyFile, "RSA");
 
-        File encryptedFile = new File(Constants.STATIC_RESOURCE_PATH + "userFiles/encryptedFile");
         EncryptData encryptData = new EncryptData("AES");
         return encryptData.encryptFile(fileBytes, getSecretKey(Constants.STATIC_RESOURCE_PATH + "symmetricKey/secretKey", "AES"));
 

@@ -3,16 +3,13 @@ package org.prezrohit.securefilestorage.services;
 import org.prezrohit.securefilestorage.config.StorageProperties;
 import org.prezrohit.securefilestorage.exceptions.StorageException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
-import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
 import org.springframework.util.FileSystemUtils;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.net.MalformedURLException;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -48,6 +45,9 @@ public class FileSystemStorageService implements StorageService {
 
     @Override
     public void store(MultipartFile multipartFile) {
+
+        // TODO - fetch encrypted symm key from DB and decrypt it, then use it to encrypt the file
+
         byte[] encryptedByteData = null;
         try {
             encryptedByteData = new EncryptionService().encrypt(multipartFile.getBytes());
@@ -59,7 +59,9 @@ public class FileSystemStorageService implements StorageService {
             System.err.println("Exception while reading bytes: " + e);
         }
 
-        try (FileOutputStream fos = new FileOutputStream(this.rootLocation.toFile() + multipartFile.getOriginalFilename())) {
+        String filePath = this.rootLocation + "/" + multipartFile.getOriginalFilename();
+        System.out.println("filePath: " + filePath);
+        try (FileOutputStream fos = new FileOutputStream(filePath)) {
             fos.write(encryptedByteData);
             fos.flush();
 
@@ -69,6 +71,7 @@ public class FileSystemStorageService implements StorageService {
         } catch (IOException e) {
             System.err.println("Exception while writing the file (bytes): " + e);
         }
+
         System.out.println("The file was successfully encrypted and stored in: " + this.rootLocation);
 
 
@@ -111,7 +114,31 @@ public class FileSystemStorageService implements StorageService {
 
     @Override
     public Resource loadAsResource(String fileName) {
+        /*
+        TODO:
+            1. read file from storage
+            2. read symm key and private key from DB
+            3. decrypt symm key
+            4. use the symm key to decrypt the requested file
+            5. return the file as resource
+         */
+
+        Path filePath = load(fileName);
         try {
+            byte[] encryptedFileBytes = Files.readAllBytes(filePath);
+            byte[] decryptedFileBytes = new DecryptionService().decrypt(encryptedFileBytes);
+            return new InputStreamResource(new ByteArrayInputStream(decryptedFileBytes));
+
+        } catch (IOException e) {
+            System.err.println("Exception while reading file: " + e);
+
+        } catch (Exception e) {
+            System.err.println("Exception while decrypting file: " + e);
+        }
+
+        return null;
+
+        /*try {
             Path file = load(fileName);
             Resource resource = new UrlResource(file.toUri());
             if (resource.exists() || resource.isReadable()) {
@@ -123,7 +150,7 @@ public class FileSystemStorageService implements StorageService {
 
         } catch (MalformedURLException e) {
             throw new StorageException("Could not read file: " + fileName, e);
-        }
+        }*/
     }
 
     @Override

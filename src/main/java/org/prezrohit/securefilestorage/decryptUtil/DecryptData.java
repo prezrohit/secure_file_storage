@@ -12,20 +12,13 @@ public class DecryptData {
 
     private final Cipher cipher;
 
-    public DecryptData(File encryptedFileReceived, File decryptedFile, SecretKeySpec secretKey, String algorithm)
-            throws IOException, GeneralSecurityException {
-
+    public DecryptData(String algorithm) throws GeneralSecurityException {
         this.cipher = Cipher.getInstance(algorithm);
-        decryptFile(getFileInBytes(encryptedFileReceived), decryptedFile, secretKey);
-
     }
 
-    public void decryptFile(byte[] input, File output, SecretKeySpec key)
-            throws IOException, GeneralSecurityException {
-
+    public byte[] decryptFile(byte[] input, SecretKeySpec key) throws GeneralSecurityException {
         this.cipher.init(Cipher.DECRYPT_MODE, key);
-        writeToFile(output, this.cipher.doFinal(input));
-
+        return this.cipher.doFinal(input);
     }
 
     private void writeToFile(File output, byte[] toWrite) throws IOException {

@@ -41,19 +41,16 @@ public class DecryptionService {
 
     }
 
-    public void decrypt() throws Exception {
+    public byte[] decrypt(byte[] encryptedFileReceived) throws Exception {
 
         File encryptedKeyReceived = new File(Constants.STATIC_RESOURCE_PATH + "symmetricKey/encryptedSecretKey");
         File decryptedKeyFile = new File(Constants.STATIC_RESOURCE_PATH + "decryptedKey/SecretKey");
         new DecryptKey(getPrivate(Constants.STATIC_RESOURCE_PATH + "bobKeyPair/privateKey", "RSA"),
                 encryptedKeyReceived, decryptedKeyFile, "RSA");
 
-        File encryptedFileReceived = new File(Constants.STATIC_RESOURCE_PATH + "userFiles/encryptedFile");
-        File decryptedFile = new File(Constants.STATIC_RESOURCE_PATH + "userFiles/decryptedFile.mp3");
-        new DecryptData(encryptedFileReceived, decryptedFile,
-                getSecretKey(Constants.STATIC_RESOURCE_PATH + "decryptedKey/SecretKey",
-                        "AES"), "AES");
-
+        DecryptData decryptData = new DecryptData("AES");
+        return decryptData.decryptFile(encryptedFileReceived,
+                getSecretKey(Constants.STATIC_RESOURCE_PATH + "decryptedKey/SecretKey", "AES"));
     }
 
 }

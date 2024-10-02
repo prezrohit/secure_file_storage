@@ -29,10 +29,9 @@ public class FileUploadController {
     public ResponseEntity<Resource> serveFile(@PathVariable String fileName) {
         Resource file = storageService.loadAsResource(fileName);
 
-        if (file == null) return ResponseEntity.notFound().build();
+        if (file == null) throw new StorageFileNotFoundException("File not found: " + fileName);
 
-        return ResponseEntity.ok().header(HttpHeaders.CONTENT_DISPOSITION,
-                "attachment; filename=\"" + file.getFilename() + "\"").body(file);
+        return ResponseEntity.ok().header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileName + "\"").body(file);
     }
 
     @ResponseBody
@@ -40,11 +39,6 @@ public class FileUploadController {
     public ResponseEntity<String> handleFileUpload(@RequestParam("files") MultipartFile[] files) {
         Arrays.stream(files).forEach(storageService::store);
         return ResponseEntity.ok("Files uploaded successfully!");
-    }
-
-    @ExceptionHandler(StorageFileNotFoundException.class)
-    public ResponseEntity<?> handleStorageFileNotFoundException(StorageFileNotFoundException exception) {
-        return ResponseEntity.notFound().build();
     }
 
     // will be used later to show UI with download button
@@ -55,11 +49,7 @@ public class FileUploadController {
         File file = new File(fileName);
 
         // Prepare HTML content
-        String htmlContent = "<html><body>"
-                + "<h1>Download Your File</h1>"
-                + "<p>Click the link below to download the file:</p>"
-                + "<a href='/file/" + fileName + "'>Download File</a>"
-                + "</body></html>";
+        String htmlContent = "<html><body>" + "<h1>Download Your File</h1>" + "<p>Click the link below to download the file:</p>" + "<a href='/file/" + fileName + "'>Download File</a>" + "</body></html>";
 
         // Create headers for file download
         HttpHeaders headers = new HttpHeaders();
