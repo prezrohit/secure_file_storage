@@ -9,13 +9,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.FileSystemUtils;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
+import java.security.GeneralSecurityException;
 import java.util.stream.Stream;
 
 @Service
@@ -46,26 +47,50 @@ public class FileSystemStorageService implements StorageService {
     }
 
     @Override
-    public void store(MultipartFile file) {
+    public void store(MultipartFile multipartFile) {
+        byte[] encryptedByteData = null;
         try {
-            if (file == null || file.isEmpty()) {
-                throw new StorageException("Received empty file");
+            encryptedByteData = new EncryptionService().encrypt(multipartFile.getBytes());
+
+        } catch (GeneralSecurityException e) {
+            System.err.println("Encryption Exception: " + e);
+
+        } catch (IOException e) {
+            System.err.println("Exception while reading bytes: " + e);
+        }
+
+        try (FileOutputStream fos = new FileOutputStream(this.rootLocation.toFile() + multipartFile.getOriginalFilename())) {
+            fos.write(encryptedByteData);
+            fos.flush();
+
+        } catch (FileNotFoundException e) {
+            System.err.println("FileNotFoundException: " + e);
+
+        } catch (IOException e) {
+            System.err.println("Exception while writing the file (bytes): " + e);
+        }
+        System.out.println("The file was successfully encrypted and stored in: " + this.rootLocation);
+
+
+        /*try {
+            if (multipartFile == null || multipartFile.isEmpty()) {
+                throw new StorageException("Received empty multipartFile");
             }
 
-            Path destinationFile = this.rootLocation.resolve(Paths.get(file.getOriginalFilename()))
+            Path destinationFile = this.rootLocation.resolve(Paths.get(multipartFile.getOriginalFilename()))
                     .normalize().toAbsolutePath();
 
             if (!destinationFile.getParent().equals(this.rootLocation.toAbsolutePath())) {
-                throw new StorageException("Cannot store file outside current directory");
+                throw new StorageException("Cannot store multipartFile outside current directory");
             }
 
-            try (InputStream inputStream = file.getInputStream()) {
+            try (InputStream inputStream = multipartFile.getInputStream()) {
                 Files.copy(inputStream, destinationFile, StandardCopyOption.REPLACE_EXISTING);
             }
 
         } catch (IOException e) {
             throw new StorageException("Failed to store file", e);
-        }
+        }*/
     }
 
     @Override

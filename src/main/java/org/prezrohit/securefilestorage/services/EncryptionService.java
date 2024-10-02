@@ -38,16 +38,16 @@ public class EncryptionService {
         return new SecretKeySpec(keyBytes, algorithm);
     }
 
-    public void encrypt() throws GeneralSecurityException, IOException {
+    public byte[] encrypt(byte[] fileBytes) throws GeneralSecurityException, IOException {
         File originalKeyFile = new File(Constants.STATIC_RESOURCE_PATH + "symmetricKey/secretKey");
         File encryptedKeyFile = new File(Constants.STATIC_RESOURCE_PATH + "symmetricKey/encryptedSecretKey");
         new EncryptKey(getPublic(Constants.STATIC_RESOURCE_PATH + "bobKeyPair/publicKey", "RSA"),
                 originalKeyFile, encryptedKeyFile, "RSA");
 
-        File originalFile = new File(Constants.STATIC_RESOURCE_PATH + "userFiles/file.pdf");
         File encryptedFile = new File(Constants.STATIC_RESOURCE_PATH + "userFiles/encryptedFile");
-        new EncryptData(originalFile, encryptedFile, getSecretKey(Constants.STATIC_RESOURCE_PATH + "symmetricKey/secretKey",
-                "AES"), "AES");
+        EncryptData encryptData = new EncryptData("AES");
+        return encryptData.encryptFile(fileBytes, getSecretKey(Constants.STATIC_RESOURCE_PATH + "symmetricKey/secretKey", "AES"));
+
     }
 
 }

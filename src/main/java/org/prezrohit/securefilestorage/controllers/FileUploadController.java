@@ -36,6 +36,19 @@ public class FileUploadController {
     }
 
     @ResponseBody
+    @PostMapping("/")
+    public ResponseEntity<String> handleFileUpload(@RequestParam("files") MultipartFile[] files) {
+        Arrays.stream(files).forEach(storageService::store);
+        return ResponseEntity.ok("Files uploaded successfully!");
+    }
+
+    @ExceptionHandler(StorageFileNotFoundException.class)
+    public ResponseEntity<?> handleStorageFileNotFoundException(StorageFileNotFoundException exception) {
+        return ResponseEntity.notFound().build();
+    }
+
+    // will be used later to show UI with download button
+    @ResponseBody
     @GetMapping("/download/{fileName:.+}")
     public ResponseEntity<Object> downloadFile(@PathVariable String fileName) {
         // Path to the file to be downloaded
@@ -55,17 +68,5 @@ public class FileUploadController {
 
         // Return a combined response
         return ResponseEntity.status(HttpStatus.OK).headers(headers).body(htmlContent);
-    }
-
-    @ResponseBody
-    @PostMapping("/")
-    public ResponseEntity<String> handleFileUpload(@RequestParam("files") MultipartFile[] files) {
-        Arrays.stream(files).forEach(storageService::store);
-        return ResponseEntity.ok("Files uploaded successfully!");
-    }
-
-    @ExceptionHandler(StorageFileNotFoundException.class)
-    public ResponseEntity<?> handleStorageFileNotFoundException(StorageFileNotFoundException exception) {
-        return ResponseEntity.notFound().build();
     }
 }

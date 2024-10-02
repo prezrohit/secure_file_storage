@@ -49,7 +49,7 @@ public class DecryptionService {
                 encryptedKeyReceived, decryptedKeyFile, "RSA");
 
         File encryptedFileReceived = new File(Constants.STATIC_RESOURCE_PATH + "userFiles/encryptedFile");
-        File decryptedFile = new File(Constants.STATIC_RESOURCE_PATH + "userFiles/decryptedFile.pdf");
+        File decryptedFile = new File(Constants.STATIC_RESOURCE_PATH + "userFiles/decryptedFile.mp3");
         new DecryptData(encryptedFileReceived, decryptedFile,
                 getSecretKey(Constants.STATIC_RESOURCE_PATH + "decryptedKey/SecretKey",
                         "AES"), "AES");

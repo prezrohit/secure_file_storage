@@ -2,7 +2,6 @@ package org.prezrohit.securefilestorage.encryptionutil;
 
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
-import javax.crypto.spec.SecretKeySpec;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -13,20 +12,16 @@ public class EncryptData {
 
     private final Cipher cipher;
 
-    public EncryptData(File originalFile, File encrypted, SecretKey secretKey, String cipherAlgorithm)
-            throws IOException, GeneralSecurityException {
+    public EncryptData(String cipherAlgorithm) throws GeneralSecurityException {
 
         this.cipher = Cipher.getInstance(cipherAlgorithm);
-        encryptFile(getFileInBytes(originalFile), encrypted, secretKey);
-
     }
 
-    public void encryptFile(byte[] input, File output, SecretKey key)
-            throws IOException, GeneralSecurityException {
+    public byte[] encryptFile(byte[] input, SecretKey key) throws GeneralSecurityException {
 
         this.cipher.init(Cipher.ENCRYPT_MODE, key);
-        writeToFile(output, this.cipher.doFinal(input));
-
+        // writeToFile(output, this.cipher.doFinal(input));
+        return this.cipher.doFinal(input);
     }
 
     private void writeToFile(File output, byte[] toWrite) throws IOException {
@@ -37,7 +32,6 @@ public class EncryptData {
         fos.flush();
         fos.close();
         System.out.println("The file was successfully encrypted and stored in: " + output.getPath());
-
     }
 
     public byte[] getFileInBytes(File f) throws IOException {
