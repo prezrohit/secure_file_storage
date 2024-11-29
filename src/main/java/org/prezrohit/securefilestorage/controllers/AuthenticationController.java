@@ -2,8 +2,10 @@ package org.prezrohit.securefilestorage.controllers;
 
 import org.prezrohit.securefilestorage.dtos.LoginUserDto;
 import org.prezrohit.securefilestorage.dtos.RegisterUserDto;
+import org.prezrohit.securefilestorage.entities.EncryptionKeys;
 import org.prezrohit.securefilestorage.entities.LoginResponse;
 import org.prezrohit.securefilestorage.entities.User;
+import org.prezrohit.securefilestorage.services.crypto.EncryptionKeysService;
 import org.prezrohit.securefilestorage.services.security.AuthenticationService;
 import org.prezrohit.securefilestorage.services.security.JwtService;
 import org.springframework.http.ResponseEntity;
@@ -12,20 +14,25 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.security.NoSuchAlgorithmException;
+
 @RequestMapping("/auth")
 @RestController
 public class AuthenticationController {
     private final JwtService jwtService;
-    final AuthenticationService authenticationService;
+    private final AuthenticationService authenticationService;
+    private final EncryptionKeysService encryptionKeysService;
 
-    public AuthenticationController(JwtService jwtService, AuthenticationService authenticationService) {
+    public AuthenticationController(JwtService jwtService, AuthenticationService authenticationService, EncryptionKeysService encryptionKeysService) {
         this.jwtService = jwtService;
         this.authenticationService = authenticationService;
+        this.encryptionKeysService = encryptionKeysService;
     }
 
     @PostMapping("/register")
-    public ResponseEntity<User> register(@RequestBody RegisterUserDto registerUserDto) {
-        User registerUser = authenticationService.signup(registerUserDto);
+    public ResponseEntity<User> register(@RequestBody RegisterUserDto registerUserDto) throws NoSuchAlgorithmException {
+        EncryptionKeys encryptionKeys = encryptionKeysService.generateKeys();
+        User registerUser = authenticationService.signup(registerUserDto, encryptionKeys);
         return ResponseEntity.ok(registerUser);
     }
 

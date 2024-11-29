@@ -101,6 +101,11 @@ public class User implements UserDetails {
         return this;
     }
 
+    public User setEncryptionKeys(EncryptionKeys encryptionKeys) {
+        this.encryptionKeysId = encryptionKeys;
+        return this;
+    }
+
     @Override
     public String toString() {
         return "User{" +

@@ -2,6 +2,7 @@ package org.prezrohit.securefilestorage.services.security;
 
 import org.prezrohit.securefilestorage.dtos.LoginUserDto;
 import org.prezrohit.securefilestorage.dtos.RegisterUserDto;
+import org.prezrohit.securefilestorage.entities.EncryptionKeys;
 import org.prezrohit.securefilestorage.entities.User;
 import org.prezrohit.securefilestorage.repositories.UserRepository;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -21,10 +22,11 @@ public class AuthenticationService {
         this.authenticationManager = authenticationManager;
     }
 
-    public User signup(RegisterUserDto input) {
+    public User signup(RegisterUserDto input, EncryptionKeys encryptionKeys) {
         User user = new User()
                 .setFullName(input.getFullName())
                 .setEmail(input.getEmail())
+                .setEncryptionKeys(encryptionKeys)
                 .setPassword(passwordEncoder.encode(input.getPassword()));
 
         return repository.save(user);

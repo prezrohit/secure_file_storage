@@ -1,10 +1,9 @@
 package org.prezrohit.securefilestorage.entities;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.Getter;
 
-@Data
+@Getter
 @Entity
 @Table(name = "encryption_keys")
 public class EncryptionKeys {
@@ -12,20 +11,31 @@ public class EncryptionKeys {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    @OneToOne(mappedBy = "encryptionKeysId")
-    @JsonIgnore
-    private User user;
+    @Lob
+    @Column(columnDefinition = "LONGBLOB")
+    private byte[] privateKey;
 
     @Lob
-    @Column(columnDefinition = "text")
-    private String privateKey;
+    @Column(columnDefinition = "LONGBLOB")
+    private byte[] publicKey;
 
     @Lob
-    @Column(columnDefinition = "text")
-    private String publicKey;
+    @Column(columnDefinition = "LONGBLOB")
+    private byte[] symmetricKey;
 
-    @Lob
-    @Column(columnDefinition = "text")
-    private String symmetricKey;
+    public EncryptionKeys setPrivateKey(byte[] privateKey) {
+        this.privateKey = privateKey;
+        return this;
+    }
+
+    public EncryptionKeys setPublicKey(byte[] publicKey) {
+        this.publicKey = publicKey;
+        return this;
+    }
+
+    public EncryptionKeys setSymmetricKey(byte[] symmetricKey) {
+        this.symmetricKey = symmetricKey;
+        return this;
+    }
 }
 
