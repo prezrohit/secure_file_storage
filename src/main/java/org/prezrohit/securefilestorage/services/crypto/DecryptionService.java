@@ -1,7 +1,7 @@
-package org.prezrohit.securefilestorage.services;
+package org.prezrohit.securefilestorage.services.crypto;
 
-import org.prezrohit.securefilestorage.decryptUtil.DecryptData;
-import org.prezrohit.securefilestorage.decryptUtil.DecryptKey;
+import org.prezrohit.securefilestorage.util.decryptUtil.DecryptData;
+import org.prezrohit.securefilestorage.util.decryptUtil.DecryptKey;
 import org.prezrohit.securefilestorage.util.Constants;
 import org.springframework.stereotype.Service;
 

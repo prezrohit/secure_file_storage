@@ -1,40 +1,42 @@
-package org.prezrohit.securefilestorage.encryptionutil;
+package org.prezrohit.securefilestorage.util.decryptUtil;
 
+import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
-import java.security.PublicKey;
+import java.security.PrivateKey;
 
-public class EncryptKey {
+public class DecryptKey {
 
     private final Cipher cipher;
 
-    public EncryptKey(PublicKey key, File originalKeyFile, File encryptedKeyFile, String cipherAlgorithm)
+    public DecryptKey(PrivateKey privateKey, File encryptedKeyReceived, File decryptedKeyFile, String algorithm)
             throws IOException, GeneralSecurityException {
 
-        this.cipher = Cipher.getInstance(cipherAlgorithm);
-        encryptFile(getFileInBytes(originalKeyFile), encryptedKeyFile, key);
-
+        this.cipher = Cipher.getInstance(algorithm);
+        decryptFile(getFileInBytes(encryptedKeyReceived), decryptedKeyFile, privateKey);
     }
 
-    public void encryptFile(byte[] input, File output, PublicKey key) throws IOException, GeneralSecurityException {
+    public void decryptFile(byte[] input, File output, PrivateKey key)
+            throws IOException, GeneralSecurityException {
 
-        this.cipher.init(Cipher.ENCRYPT_MODE, key);
+        this.cipher.init(Cipher.DECRYPT_MODE, key);
         writeToFile(output, this.cipher.doFinal(input));
 
     }
 
-    private void writeToFile(File output, byte[] toWrite) throws IOException {
+    private void writeToFile(File output, byte[] toWrite)
+            throws IllegalBlockSizeException, BadPaddingException, IOException {
 
         output.getParentFile().mkdirs();
         FileOutputStream fos = new FileOutputStream(output);
         fos.write(toWrite);
         fos.flush();
         fos.close();
-        System.out.println("The key was successfully encrypted and stored in: " + output.getPath());
 
     }
 
@@ -45,7 +47,6 @@ public class EncryptKey {
         fis.read(fbytes);
         fis.close();
         return fbytes;
-
     }
 
 }

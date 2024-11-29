@@ -1,6 +1,9 @@
 spring:
   application:
     name: SecureFileStorage
+  security:
+    user:
+      password: abcd
   datasource:
     url: jdbc:mysql://localhost:3306/secure_file_storage_db
     username: root
@@ -10,11 +13,23 @@ spring:
     hibernate:
       ddl-auto: update
     open-in-view: false
+    show-sql: true
   servlet:
     multipart:
       max-file-size: -1
       max-request-size: -1
+
+# security config for JWT
+security:
+  jwt:
+    secret-key: 5a108b6bb745866253bc6b253c366843688d2bc048454d9bf8115cbbb7105c88
+    # token expiration time is 24 hours
+    expiration-time: 86400000
+
+# file store path config
 storage:
   location: C:/Users/prezrohit/Desktop/SecureFileStorage_Files/
+
+# Encryption config
 encryption:
   rsa-key-length: 4096

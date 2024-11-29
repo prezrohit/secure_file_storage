@@ -1,4 +1,4 @@
-package org.prezrohit.securefilestorage.encryptionutil;
+package org.prezrohit.securefilestorage.util.encryptionutil;
 
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;

@@ -1,4 +1,4 @@
-package org.prezrohit.securefilestorage.keyUtil;
+package org.prezrohit.securefilestorage.util.keyUtil;
 
 import lombok.Getter;
 import org.prezrohit.securefilestorage.util.Constants;
