@@ -5,13 +5,13 @@ import lombok.Data;
 
 @Data
 @Entity
-@Table(name = "encryption_key_pairs")
-public class EncryptionKeyPair {
+@Table(name = "encryption_keys")
+public class EncryptionKeys {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    @OneToOne(mappedBy = "encryptionKeyPairId")
+    @OneToOne(mappedBy = "encryptionKeysId")
     private User user;
 
     @Lob
@@ -21,5 +21,9 @@ public class EncryptionKeyPair {
     @Lob
     @Column(columnDefinition = "text")
     private String publicKey;
+
+    @Lob
+    @Column(columnDefinition = "text")
+    private String symmetricKey;
 }
 
