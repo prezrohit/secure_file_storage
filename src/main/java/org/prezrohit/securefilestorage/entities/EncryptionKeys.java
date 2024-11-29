@@ -1,5 +1,6 @@
 package org.prezrohit.securefilestorage.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -12,6 +13,7 @@ public class EncryptionKeys {
     private long id;
 
     @OneToOne(mappedBy = "encryptionKeysId")
+    @JsonIgnore
     private User user;
 
     @Lob
