@@ -38,8 +38,8 @@ public class User implements UserDetails {
     private Date modifiedAt;
 
     @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "encryption_keys_id", referencedColumnName = "id")
-    private EncryptionKeys encryptionKeysId;
+    @JoinColumn(name = "encryption_keys", referencedColumnName = "id")
+    private EncryptionKeys encryptionKeys;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -102,7 +102,7 @@ public class User implements UserDetails {
     }
 
     public User setEncryptionKeys(EncryptionKeys encryptionKeys) {
-        this.encryptionKeysId = encryptionKeys;
+        this.encryptionKeys = encryptionKeys;
         return this;
     }
 

@@ -5,7 +5,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.*;
+import javax.crypto.spec.SecretKeySpec;
 import java.security.*;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.PKCS8EncodedKeySpec;
 
 @Service
 public class EncryptionKeysService {
@@ -28,7 +31,7 @@ public class EncryptionKeysService {
         PrivateKey privateKey = pair.getPrivate();
         PublicKey publicKey = pair.getPublic();
 
-        byte[] encryptedSymmetricKey = getEncryptedSymmetricKey(symmetricKey, publicKey);
+        byte[] encryptedSymmetricKey = encryptSymmetricKey(symmetricKey, publicKey);
 
         // TODO
         //  find a way to encrypt private key and then store it
@@ -39,10 +42,27 @@ public class EncryptionKeysService {
                 .setPrivateKey(privateKey.getEncoded());
     }
 
-    private byte[] getEncryptedSymmetricKey(SecretKey symmetricKey, PublicKey publicKey) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
+    private byte[] encryptSymmetricKey(SecretKey symmetricKey, PublicKey publicKey) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
         Cipher cipher = Cipher.getInstance("RSA");
         cipher.init(Cipher.ENCRYPT_MODE, publicKey);
         return cipher.doFinal(symmetricKey.getEncoded());
     }
+
+    public byte[] decryptKey(byte[] encryptedSymmetricKey, PrivateKey privateKey) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
+        Cipher cipher = Cipher.getInstance("RSA");
+        cipher.init(Cipher.DECRYPT_MODE, privateKey);
+        return cipher.doFinal(encryptedSymmetricKey);
+    }
+
+    public PrivateKey getPrivateKey(byte[] encodedPrivateKey) throws NoSuchAlgorithmException, InvalidKeySpecException {
+        KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+        PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(encodedPrivateKey);
+        return keyFactory.generatePrivate(keySpec);
+    }
+
+    public SecretKey getSymmetricKey(byte[] encodedSymmetricKey) {
+        return new SecretKeySpec(encodedSymmetricKey, "AES");
+    }
+
 
 }

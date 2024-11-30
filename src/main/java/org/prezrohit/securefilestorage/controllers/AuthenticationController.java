@@ -14,6 +14,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
+import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 
 @RequestMapping("/auth")
@@ -30,7 +34,7 @@ public class AuthenticationController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<User> register(@RequestBody RegisterUserDto registerUserDto) throws NoSuchAlgorithmException {
+    public ResponseEntity<User> register(@RequestBody RegisterUserDto registerUserDto) throws NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException {
         EncryptionKeys encryptionKeys = encryptionKeysService.generateKeys();
         User registerUser = authenticationService.signup(registerUserDto, encryptionKeys);
         return ResponseEntity.ok(registerUser);

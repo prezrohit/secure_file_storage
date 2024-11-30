@@ -1,8 +1,10 @@
 package org.prezrohit.securefilestorage.services;
 
 import org.prezrohit.securefilestorage.config.StorageProperties;
+import org.prezrohit.securefilestorage.entities.User;
 import org.prezrohit.securefilestorage.exceptions.StorageException;
 import org.prezrohit.securefilestorage.services.crypto.DecryptionService;
+import org.prezrohit.securefilestorage.services.crypto.EncryptionKeysService;
 import org.prezrohit.securefilestorage.services.crypto.EncryptionService;
 import org.prezrohit.securefilestorage.services.security.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,11 +14,23 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.FileSystemUtils;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.*;
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
+import javax.crypto.SecretKey;
+import java.io.ByteArrayInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.GeneralSecurityException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
+import java.security.spec.InvalidKeySpecException;
+import java.util.Arrays;
 import java.util.stream.Stream;
 
 @Service
@@ -25,15 +39,19 @@ public class FileSystemStorageService implements StorageService {
     private final Path rootLocation;
 
     private final UserService userService;
+    private final EncryptionService encryptionService;
+    private final EncryptionKeysService encryptionKeysService;
 
-    @Autowired
-    public FileSystemStorageService(StorageProperties properties, UserService userService) {
+    public FileSystemStorageService(StorageProperties properties, @Autowired UserService userService, EncryptionService encryptionService, EncryptionKeysService encryptionKeysService) {
         if (properties.getLocation().trim().isEmpty()) {
             throw new StorageException("File upload location cannot be empty");
         }
 
         this.userService = userService;
+        this.encryptionService = encryptionService;
+        this.encryptionKeysService = encryptionKeysService;
         this.rootLocation = Paths.get(properties.getLocation());
+
         System.out.println(this.rootLocation);
 
         init();
@@ -50,13 +68,25 @@ public class FileSystemStorageService implements StorageService {
     }
 
     @Override
-    public void store(MultipartFile multipartFile) {
+    public void store(MultipartFile[] files) throws NoSuchAlgorithmException, InvalidKeySpecException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException {
+        User authenticatedUser = userService.authenticatedUser();
+        System.out.println("store() files called");
+        byte[] encryptedSymmetricKey = authenticatedUser.getEncryptionKeys().getSymmetricKey();
+        PrivateKey privateKey = encryptionKeysService.getPrivateKey(authenticatedUser.getEncryptionKeys().getPrivateKey());
 
+        byte[] decryptedSymmetricKey = encryptionKeysService.decryptKey(encryptedSymmetricKey, privateKey);
+        SecretKey symmetricKey = encryptionKeysService.getSymmetricKey(decryptedSymmetricKey);
+        Arrays.stream(files).forEach(file -> store(file, symmetricKey));
+    }
+
+    private void store(MultipartFile multipartFile, SecretKey symmetricKey) {
+
+        System.out.println("store() file called");
         // TODO - fetch encrypted symm key from DB and decrypt it, then use it to encrypt the file
 
         byte[] encryptedByteData = null;
         try {
-            encryptedByteData = new EncryptionService().encrypt(multipartFile.getBytes());
+            encryptedByteData = encryptionService.encrypt(multipartFile.getBytes(), symmetricKey);
 
         } catch (GeneralSecurityException e) {
             System.err.println("Encryption Exception: " + e);

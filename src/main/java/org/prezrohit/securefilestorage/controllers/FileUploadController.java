@@ -12,8 +12,13 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 import java.io.File;
-import java.util.Arrays;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
 
 @Controller
 public class FileUploadController {
@@ -36,8 +41,8 @@ public class FileUploadController {
 
     @ResponseBody
     @PostMapping("/")
-    public ResponseEntity<String> handleFileUpload(@RequestParam("files") MultipartFile[] files) {
-        Arrays.stream(files).forEach(storageService::store);
+    public ResponseEntity<String> handleFileUpload(@RequestParam("files") MultipartFile[] files) throws NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, InvalidKeySpecException, BadPaddingException, InvalidKeyException {
+        storageService.store(files);
         return ResponseEntity.ok("Files uploaded successfully!");
     }
 
