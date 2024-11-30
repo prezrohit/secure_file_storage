@@ -1,7 +1,7 @@
 package org.prezrohit.securefilestorage.services;
 
 import org.prezrohit.securefilestorage.config.StorageProperties;
-import org.prezrohit.securefilestorage.entities.User;
+import org.prezrohit.securefilestorage.entities.EncryptionKeys;
 import org.prezrohit.securefilestorage.exceptions.StorageException;
 import org.prezrohit.securefilestorage.services.crypto.DecryptionService;
 import org.prezrohit.securefilestorage.services.crypto.EncryptionKeysService;
@@ -69,19 +69,17 @@ public class FileSystemStorageService implements StorageService {
 
     @Override
     public void store(MultipartFile[] files) throws NoSuchAlgorithmException, InvalidKeySpecException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException {
-        User authenticatedUser = userService.authenticatedUser();
-        System.out.println("store() files called");
-        byte[] encryptedSymmetricKey = authenticatedUser.getEncryptionKeys().getSymmetricKey();
-        PrivateKey privateKey = encryptionKeysService.getPrivateKey(authenticatedUser.getEncryptionKeys().getPrivateKey());
+        EncryptionKeys encryptionKeys = userService.authenticatedUser().getEncryptionKeys();
+        byte[] encryptedSymmetricKey = encryptionKeys.getSymmetricKey();
+        PrivateKey privateKey = encryptionKeysService.getPrivateKey(encryptionKeys.getPrivateKey());
 
-        byte[] decryptedSymmetricKey = encryptionKeysService.decryptKey(encryptedSymmetricKey, privateKey);
+        byte[] decryptedSymmetricKey = encryptionKeysService.decryptSymmetricKey(encryptedSymmetricKey, privateKey);
         SecretKey symmetricKey = encryptionKeysService.getSymmetricKey(decryptedSymmetricKey);
         Arrays.stream(files).forEach(file -> store(file, symmetricKey));
     }
 
     private void store(MultipartFile multipartFile, SecretKey symmetricKey) {
 
-        System.out.println("store() file called");
         // TODO - fetch encrypted symm key from DB and decrypt it, then use it to encrypt the file
 
         byte[] encryptedByteData = null;
@@ -159,10 +157,16 @@ public class FileSystemStorageService implements StorageService {
             5. return the file as resource
          */
 
+        EncryptionKeys encryptionKeys = userService.authenticatedUser().getEncryptionKeys();
+
         Path filePath = load(fileName);
         try {
+            byte[] encryptedSymmetricKey = encryptionKeys.getSymmetricKey();
+            PrivateKey privateKey = encryptionKeysService.getPrivateKey(encryptionKeys.getPrivateKey());
+            byte[] decryptedSymmetricKey = encryptionKeysService.decryptSymmetricKey(encryptedSymmetricKey, privateKey);
+            SecretKey symmetricKey = encryptionKeysService.getSymmetricKey(decryptedSymmetricKey);
             byte[] encryptedFileBytes = Files.readAllBytes(filePath);
-            byte[] decryptedFileBytes = new DecryptionService().decrypt(encryptedFileBytes);
+            byte[] decryptedFileBytes = new DecryptionService().decrypt(encryptedFileBytes, symmetricKey);
             return new InputStreamResource(new ByteArrayInputStream(decryptedFileBytes));
 
         } catch (IOException e) {

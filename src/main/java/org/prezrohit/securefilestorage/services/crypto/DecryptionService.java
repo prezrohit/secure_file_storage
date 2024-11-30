@@ -1,10 +1,9 @@
 package org.prezrohit.securefilestorage.services.crypto;
 
-import org.prezrohit.securefilestorage.util.decryptUtil.DecryptData;
-import org.prezrohit.securefilestorage.util.decryptUtil.DecryptKey;
-import org.prezrohit.securefilestorage.util.Constants;
 import org.springframework.stereotype.Service;
 
+import javax.crypto.Cipher;
+import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import java.io.File;
 import java.io.IOException;
@@ -41,16 +40,10 @@ public class DecryptionService {
 
     }
 
-    public byte[] decrypt(byte[] encryptedFileReceived) throws Exception {
-
-        File encryptedKeyReceived = new File(Constants.STATIC_RESOURCE_PATH + "symmetricKey/encryptedSecretKey");
-        File decryptedKeyFile = new File(Constants.STATIC_RESOURCE_PATH + "decryptedKey/SecretKey");
-        new DecryptKey(getPrivate(Constants.STATIC_RESOURCE_PATH + "bobKeyPair/privateKey", "RSA"),
-                encryptedKeyReceived, decryptedKeyFile, "RSA");
-
-        DecryptData decryptData = new DecryptData("AES");
-        return decryptData.decryptFile(encryptedFileReceived,
-                getSecretKey(Constants.STATIC_RESOURCE_PATH + "decryptedKey/SecretKey", "AES"));
+    public byte[] decrypt(byte[] encryptedFileReceived, SecretKey symmetricKey) throws Exception {
+        Cipher cipher = Cipher.getInstance("AES");
+        cipher.init(Cipher.DECRYPT_MODE, symmetricKey);
+        return cipher.doFinal(encryptedFileReceived);
     }
 
 }
