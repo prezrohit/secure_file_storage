@@ -1,5 +1,6 @@
 package org.prezrohit.securefilestorage.services.crypto;
 
+import org.prezrohit.securefilestorage.entities.EncryptionKeys;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.Cipher;
@@ -16,6 +17,12 @@ import java.security.spec.X509EncodedKeySpec;
 
 @Service
 public class DecryptionService {
+    private final EncryptionKeysService encryptionKeysService;
+
+    public DecryptionService(EncryptionKeysService encryptionKeysService) {
+        this.encryptionKeysService = encryptionKeysService;
+    }
+
     private PrivateKey getPrivate(String filename, String algorithm) throws Exception {
 
         byte[] keyBytes = Files.readAllBytes(new File(filename).toPath());
@@ -40,7 +47,12 @@ public class DecryptionService {
 
     }
 
-    public byte[] decrypt(byte[] encryptedFileReceived, SecretKey symmetricKey) throws Exception {
+    public byte[] decrypt(byte[] encryptedFileReceived, EncryptionKeys encryptionKeys) throws Exception {
+        PrivateKey privateKey = encryptionKeysService.getPrivateKey(encryptionKeys.getPrivateKey());
+        byte[] encryptedSymmetricKey = encryptionKeys.getSymmetricKey();
+        byte[] decryptedSymmetricKey = encryptionKeysService.decryptSymmetricKey(encryptedSymmetricKey, privateKey);
+        SecretKey symmetricKey = encryptionKeysService.getSymmetricKey(decryptedSymmetricKey);
+
         Cipher cipher = Cipher.getInstance("AES");
         cipher.init(Cipher.DECRYPT_MODE, symmetricKey);
         return cipher.doFinal(encryptedFileReceived);

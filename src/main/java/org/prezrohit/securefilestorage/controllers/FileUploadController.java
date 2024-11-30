@@ -41,8 +41,8 @@ public class FileUploadController {
 
     @ResponseBody
     @PostMapping("/")
-    public ResponseEntity<String> handleFileUpload(@RequestParam("files") MultipartFile[] files) throws NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, InvalidKeySpecException, BadPaddingException, InvalidKeyException {
-        storageService.store(files);
+    public ResponseEntity<String> handleFileUpload(@RequestParam("file") MultipartFile file) throws NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, InvalidKeySpecException, BadPaddingException, InvalidKeyException {
+        storageService.store(file);
         return ResponseEntity.ok("Files uploaded successfully!");
     }
 

@@ -1,5 +1,6 @@
 package org.prezrohit.securefilestorage.services.crypto;
 
+import org.prezrohit.securefilestorage.entities.EncryptionKeys;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.*;
@@ -40,7 +41,12 @@ public class EncryptionService {
         return new SecretKeySpec(keyBytes, algorithm);
     }
 
-    public byte[] encrypt(byte[] fileBytes, SecretKey symmetricKey) throws IOException, NoSuchPaddingException, NoSuchAlgorithmException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
+    public byte[] encrypt(byte[] fileBytes, EncryptionKeys encryptionKeys) throws IOException, NoSuchPaddingException, NoSuchAlgorithmException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, InvalidKeySpecException {
+        PrivateKey privateKey = encryptionKeysService.getPrivateKey(encryptionKeys.getPrivateKey());
+        byte[] encryptedSymmetricKey = encryptionKeys.getSymmetricKey();
+        byte[] decryptedSymmetricKey = encryptionKeysService.decryptSymmetricKey(encryptedSymmetricKey, privateKey);
+        SecretKey symmetricKey = encryptionKeysService.getSymmetricKey(decryptedSymmetricKey);
+
         Cipher cipher = Cipher.getInstance("AES");
         cipher.init(Cipher.ENCRYPT_MODE, symmetricKey);
         return cipher.doFinal(fileBytes);
