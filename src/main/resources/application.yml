@@ -32,4 +32,7 @@ storage:
 
 # Encryption config
 encryption:
-  rsa-key-size: 4096
+  asymmetric-encryption-algorithm: RSA
+  asymmetric-encryption-key-size: 4096
+  symmetric-encryption-algorithm: AES
+  symmetric-encryption-key-size: 256

@@ -13,20 +13,25 @@ import java.security.spec.PKCS8EncodedKeySpec;
 @Service
 public class EncryptionKeysService {
 
-    // TODO
-    //  make encryption algorithms and key length as external properties
-    //  and access them using @Value here
+    @Value("${encryption.asymmetric-encryption-key-size}")
+    private int asymmetricEncryptionKeySize;
 
-    @Value("${encryption.rsa-key-size}")
-    private int rsaKeySize = 4096;
+    @Value("${encryption.symmetric-encryption-key-size}")
+    private int symmetricEncryptionKeySize;
+
+    @Value("${encryption.asymmetric-encryption-algorithm}")
+    private String asymmetricEncryptionAlgorithm;
+
+    @Value("${encryption.symmetric-encryption-algorithm}")
+    private String symmetricEncryptionAlgorithm;
 
     public EncryptionKeys generateKeys() throws NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException {
-        KeyGenerator keyGenerator = KeyGenerator.getInstance("AES");
-        keyGenerator.init(256);
+        KeyGenerator keyGenerator = KeyGenerator.getInstance(symmetricEncryptionAlgorithm);
+        keyGenerator.init(symmetricEncryptionKeySize);
         SecretKey symmetricKey = keyGenerator.generateKey();
 
-        KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
-        keyPairGenerator.initialize(rsaKeySize);
+        KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance(asymmetricEncryptionAlgorithm);
+        keyPairGenerator.initialize(asymmetricEncryptionKeySize);
         KeyPair pair = keyPairGenerator.generateKeyPair();
         PrivateKey privateKey = pair.getPrivate();
         PublicKey publicKey = pair.getPublic();
@@ -43,25 +48,25 @@ public class EncryptionKeysService {
     }
 
     private byte[] encryptSymmetricKey(SecretKey symmetricKey, PublicKey publicKey) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
-        Cipher cipher = Cipher.getInstance("RSA");
+        Cipher cipher = Cipher.getInstance(asymmetricEncryptionAlgorithm);
         cipher.init(Cipher.ENCRYPT_MODE, publicKey);
         return cipher.doFinal(symmetricKey.getEncoded());
     }
 
     public byte[] decryptSymmetricKey(byte[] encryptedSymmetricKey, PrivateKey privateKey) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
-        Cipher cipher = Cipher.getInstance("RSA");
+        Cipher cipher = Cipher.getInstance(asymmetricEncryptionAlgorithm);
         cipher.init(Cipher.DECRYPT_MODE, privateKey);
         return cipher.doFinal(encryptedSymmetricKey);
     }
 
     public PrivateKey getPrivateKey(byte[] encodedPrivateKey) throws NoSuchAlgorithmException, InvalidKeySpecException {
-        KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+        KeyFactory keyFactory = KeyFactory.getInstance(asymmetricEncryptionAlgorithm);
         PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(encodedPrivateKey);
         return keyFactory.generatePrivate(keySpec);
     }
 
     public SecretKey getSymmetricKey(byte[] encodedSymmetricKey) {
-        return new SecretKeySpec(encodedSymmetricKey, "AES");
+        return new SecretKeySpec(encodedSymmetricKey, symmetricEncryptionAlgorithm);
     }
 
 
