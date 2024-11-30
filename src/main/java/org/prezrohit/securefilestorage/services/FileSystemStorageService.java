@@ -64,8 +64,6 @@ public class FileSystemStorageService implements StorageService {
 
     private void store(MultipartFile multipartFile, EncryptionKeys encryptionKeys) {
 
-        // TODO - fetch encrypted symm key from DB and decrypt it, then use it to encrypt the file
-
         byte[] encryptedByteData = null;
         try {
             encryptedByteData = encryptionService.encrypt(multipartFile.getBytes(), encryptionKeys);
