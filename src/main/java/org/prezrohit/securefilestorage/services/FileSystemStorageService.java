@@ -4,6 +4,7 @@ import org.prezrohit.securefilestorage.config.StorageProperties;
 import org.prezrohit.securefilestorage.exceptions.StorageException;
 import org.prezrohit.securefilestorage.services.crypto.DecryptionService;
 import org.prezrohit.securefilestorage.services.crypto.EncryptionService;
+import org.prezrohit.securefilestorage.services.security.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
@@ -23,12 +24,15 @@ public class FileSystemStorageService implements StorageService {
 
     private final Path rootLocation;
 
+    private final UserService userService;
+
     @Autowired
-    public FileSystemStorageService(StorageProperties properties) {
+    public FileSystemStorageService(StorageProperties properties, UserService userService) {
         if (properties.getLocation().trim().isEmpty()) {
             throw new StorageException("File upload location cannot be empty");
         }
 
+        this.userService = userService;
         this.rootLocation = Paths.get(properties.getLocation());
         System.out.println(this.rootLocation);
 

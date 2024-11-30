@@ -1,12 +1,10 @@
 package org.prezrohit.securefilestorage.services.crypto;
 
 import org.prezrohit.securefilestorage.entities.EncryptionKeys;
-import org.prezrohit.securefilestorage.repositories.EncryptionKeysRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import javax.crypto.KeyGenerator;
-import javax.crypto.SecretKey;
+import javax.crypto.*;
 import java.security.*;
 
 @Service
@@ -19,16 +17,10 @@ public class EncryptionKeysService {
     @Value("${encryption.rsa-key-size}")
     private int rsaKeySize = 4096;
 
-    private final EncryptionKeysRepository encryptionKeysRepository;
-
-    public EncryptionKeysService(EncryptionKeysRepository encryptionKeysRepository) {
-        this.encryptionKeysRepository = encryptionKeysRepository;
-    }
-
-    public EncryptionKeys generateKeys() throws NoSuchAlgorithmException {
+    public EncryptionKeys generateKeys() throws NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException {
         KeyGenerator keyGenerator = KeyGenerator.getInstance("AES");
         keyGenerator.init(256);
-        SecretKey secretKey = keyGenerator.generateKey();
+        SecretKey symmetricKey = keyGenerator.generateKey();
 
         KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
         keyPairGenerator.initialize(rsaKeySize);
@@ -36,20 +28,21 @@ public class EncryptionKeysService {
         PrivateKey privateKey = pair.getPrivate();
         PublicKey publicKey = pair.getPublic();
 
+        byte[] encryptedSymmetricKey = getEncryptedSymmetricKey(symmetricKey, publicKey);
+
         // TODO
-        //  keep symm key encrypted by public key in the object,
-        //  keep private key encrypted by password in the object
+        //  find a way to encrypt private key and then store it
 
-        EncryptionKeys encryptionKeys = new EncryptionKeys()
-                .setSymmetricKey(secretKey.getEncoded())
-                .setPrivateKey(privateKey.getEncoded())
-                .setPublicKey(publicKey.getEncoded());
-
-        // saveEncryptionKeys(encryptionKeys);
-        return encryptionKeys;
+        return new EncryptionKeys()
+                .setSymmetricKey(encryptedSymmetricKey)
+                .setPublicKey(publicKey.getEncoded())
+                .setPrivateKey(privateKey.getEncoded());
     }
 
-    private void saveEncryptionKeys(EncryptionKeys encryptionKeys) {
-        encryptionKeysRepository.save(encryptionKeys);
+    private byte[] getEncryptedSymmetricKey(SecretKey symmetricKey, PublicKey publicKey) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
+        Cipher cipher = Cipher.getInstance("RSA");
+        cipher.init(Cipher.ENCRYPT_MODE, publicKey);
+        return cipher.doFinal(symmetricKey.getEncoded());
     }
+
 }
