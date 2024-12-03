@@ -4,6 +4,8 @@ environment:
 spring:
   application:
     name: SecureFileStorage
+  profiles:
+    active: dev
   security:
     user:
       password: abcd
@@ -12,6 +14,9 @@ spring:
       ddl-auto: update
     open-in-view: false
     show-sql: true
+
+logging:
+  config: classpath:log4j2-${spring.profiles.active}.xml
 
 # security config for JWT
 security:
