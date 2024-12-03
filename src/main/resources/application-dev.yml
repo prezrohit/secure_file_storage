@@ -1,0 +1,27 @@
+environment:
+  name: dev
+
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/secure_file_storage_db
+    username: root
+    password: PR3Z1sk1ng
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    open-in-view: false
+    show-sql: true
+  servlet:
+    multipart:
+      max-file-size: 1GB
+      max-request-size: 1GB
+
+# file store path config
+storage:
+  location: C:/Users/prezrohit/Desktop/SecureFileStorage_Files/
+
+# Encryption config
+encryption:
+  asymmetric-encryption-algorithm: RSA
+  asymmetric-encryption-key-size: 4096
+  symmetric-encryption-algorithm: AES
+  symmetric-encryption-key-size: 256
